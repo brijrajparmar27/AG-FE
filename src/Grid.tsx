@@ -4,6 +4,8 @@ import {
   GridReadyEvent,
   IServerSideDatasource,
   ModuleRegistry,
+  ValueFormatterParams,
+  SetFilterValuesFuncParams,
 } from "ag-grid-community";
 import { ServerSideRowModelModule } from "ag-grid-enterprise";
 import { AgGridReact } from "ag-grid-react";
@@ -17,7 +19,9 @@ import {
   SearchRequest,
   SearchResponse,
   StatusId,
+  LineOfBusinessStats,
 } from "./types";
+import { statusMap } from "./constants";
 
 // Register the required modules
 ModuleRegistry.registerModules([ServerSideRowModelModule]);
@@ -31,14 +35,8 @@ const Grid = () => {
   const [colDefs] = useState<ColDef<GridRow>[]>([
     {
       field: "searchText",
-      headerName: "Search",
       hide: true,
       filter: "agTextColumnFilter",
-      filterParams: {
-        filterOptions: ["contains"],
-        buttons: ["reset", "apply"],
-        closeOnApply: true,
-      },
     },
     {
       field: "status",
@@ -46,21 +44,16 @@ const Grid = () => {
       minWidth: 100,
       filter: "agSetColumnFilter",
       filterParams: {
-        // values: statuses.map((status) => status.id),
-        values: [
-          "ALL",
-          "PENDING_RENEWAL",
-          "APPROVAL_PENDING",
-          "IN_DESIGN",
-          "PENDING_QUOTE",
-          "QUOTED",
-          "BOUND",
-          "ISSUED",
-          "CLOSED",
-        ],
-        buttons: ["reset", "apply"],
-        closeOnApply: true,
-        suppressAndOrCondition: true,
+        values: (params: SetFilterValuesFuncParams) => {
+          fetch("http://localhost:3000/api/line-of-business-stats")
+            .then((raw) => raw.json())
+            .then((response: LineOfBusinessStats) =>
+              params.success(response.statuses.map((d) => d.id))
+            );
+        },
+        valueFormatter: ({ value }: ValueFormatterParams) => {
+          return statusMap[value as StatusId] || value;
+        },
       },
     },
     {
@@ -80,12 +73,28 @@ const Grid = () => {
         return params.value.join(", ");
       },
       minWidth: 150,
+      filter: "agSetColumnFilter",
+      filterParams: {
+        values: (params: SetFilterValuesFuncParams) => {
+          fetch("http://localhost:3000/api/line-of-business-stats")
+            .then((raw) => raw.json())
+            .then((response: LineOfBusinessStats) =>
+              params.success(response.linesOfBusiness)
+            );
+        },
+      },
     },
-    { field: "MBU_handler", headerName: "MBU Handler", minWidth: 120 },
+    {
+      field: "MBU_handler",
+      headerName: "MBU Handler",
+      minWidth: 120,
+      filter: "agTextColumnFilter",
+    },
     {
       field: "producing_UW",
       headerName: "Producing UW",
       minWidth: 120,
+      filter: "agTextColumnFilter",
     },
   ]);
 
@@ -149,6 +158,20 @@ const Grid = () => {
               if (field === "searchText") {
                 return {
                   field: "searchFields",
+                  filterAction: "contains",
+                  filterValue: filter.filter,
+                };
+              }
+              if (field === "MBU_handler") {
+                return {
+                  field: "MBU_handler",
+                  filterAction: "contains",
+                  filterValue: filter.filter,
+                };
+              }
+              if (field === "producing_UW") {
+                return {
+                  field: "producing_UW",
                   filterAction: "contains",
                   filterValue: filter.filter,
                 };
