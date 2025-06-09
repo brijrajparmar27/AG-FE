@@ -1,0 +1,49 @@
+.grid-container {
+  height: 50%;
+  width: 95%;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.status-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.status-item {
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.status-item:hover {
+  background-color: #f5f5f5;
+}
+
+.status-item.selected {
+  color: #1976d2;
+  font-weight: 500;
+}
+
+.status-count {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.status-name {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+}
