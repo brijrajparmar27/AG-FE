@@ -237,7 +237,6 @@ const Grid = () => {
 
   return (
     <div className="grid-container">
-      <h1>hello</h1>
       <input
         type="text"
         onChange={handleSearchInput}
